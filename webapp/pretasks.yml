@@ -1,0 +1,25 @@
+---
+ - name: installation docker
+   hosts: prod
+   become: true
+   tasks:
+    - name: set osdistribution
+      ansible.builtin.set_fact:
+        osdistribution: "{{'rhel' if (ansible_distribution == 'Red Hat Enterprise Linux') else (ansible_distribution | lower)}}"
+    - name: Add signing Key
+      ansible.builtin.rpm_key:
+        key: "https://download.docker.com/linux/{{osdistribution}}/gpg"
+        state: present
+    - name: install docker
+      ansible.builtin.yum:
+        name:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        state: latest
+        update_cache: true
+    - name: start docker
+      ansible.builtin.service:
+        name: "docker"
+        enabled: true
+        state: started

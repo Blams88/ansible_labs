@@ -1,0 +1,34 @@
+---
+  - name: "Apache Installation using docker"
+    hosts: prod
+    pre_tasks:
+      - name: install python-pip
+        yum: name=python-pip state=present update_cache=yes
+      - name: install docker python
+        pip: name=docker-py
+    tasks:
+      - name: "creation workspace"
+        file:
+          path: "/home/blami/webapp"
+          state: directory
+      - name:  copy  files to workspace
+        copy:
+          src: "/etc/ansible/webapp/index.html"
+          dest: "/home/blami/webapp"
+      - name: "Pulling image"
+        docker_image:
+          name: httpd
+          source: pull
+      - name: create apache container
+        docker_container:
+            name: webapp
+            image: httpd
+            state: started
+            detach: true
+            interactive: true
+            exposed_ports:
+            - "80"
+            ports:
+            - "80:80"
+            volumes:
+            - /home/blami/:/usr/local/apache2/htdocs/
